@@ -1,0 +1,8 @@
+# VS code conf
+.vscode/
+
+# Env file
+.env
+
+# Terraform
+.terraform/
