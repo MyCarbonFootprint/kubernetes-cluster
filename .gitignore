@@ -6,3 +6,9 @@
 
 # Terraform
 .terraform/
+
+# GCP service account
+service-account.json
+
+# Kube
+kubeconfig

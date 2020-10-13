@@ -27,13 +27,19 @@ jobs:
         terraform -v
 
     # Runs a single command using the runners shell
+    - name: Prepare GCP service account file
+      shell: bash
+      env:
+        GCP_SERVICE_ACCOUNT_FILE: ${{ secrets.GCP_SERVICE_ACCOUNT_FILE }}
+      run: |
+        echo ${GCP_SERVICE_ACCOUNT_FILE} > service-account.json
+
+        
+    # Runs a single command using the runners shell
     - name: Terraform Init
       shell: bash
       env:
-        SCW_ACCESS_KEY: SCW6VHPETC96DKKNPCNZ
         SCW_SECRET_KEY: ${{ secrets.SCW_SECRET_KEY }}
-        SCW_DEFAULT_REGION: fr-par
-        SCW_DEFAULT_ZONE: fr-par-1
         SCW_DEFAULT_ORGANIZATION_ID: ${{ secrets.SCW_DEFAULT_ORGANIZATION_ID }}
       run: |
         export SCW_ACCESS_KEY=SCW6VHPETC96DKKNPCNZ
@@ -41,16 +47,14 @@ jobs:
         export SCW_DEFAULT_REGION=fr-par
         export SCW_DEFAULT_ZONE=fr-par-1
         export SCW_DEFAULT_ORGANIZATION_ID=${SCW_DEFAULT_ORGANIZATION_ID}
+        export GOOGLE_BACKEND_CREDENTIALS=service-account.json
         terraform init
 
     # Runs a single command using the runners shell
     - name: Terraform plan
       shell: bash
       env:
-        SCW_ACCESS_KEY: SCW6VHPETC96DKKNPCNZ
         SCW_SECRET_KEY: ${{ secrets.SCW_SECRET_KEY }}
-        SCW_DEFAULT_REGION: fr-par
-        SCW_DEFAULT_ZONE: fr-par-1
         SCW_DEFAULT_ORGANIZATION_ID: ${{ secrets.SCW_DEFAULT_ORGANIZATION_ID }}
       run: |
         export SCW_ACCESS_KEY=SCW6VHPETC96DKKNPCNZ
@@ -58,6 +62,7 @@ jobs:
         export SCW_DEFAULT_REGION=fr-par
         export SCW_DEFAULT_ZONE=fr-par-1
         export SCW_DEFAULT_ORGANIZATION_ID=${SCW_DEFAULT_ORGANIZATION_ID}
+        export GOOGLE_BACKEND_CREDENTIALS=service-account.json
         terraform plan
 
     # Runs a single command using the runners shell
@@ -66,10 +71,7 @@ jobs:
       if: github.ref == 'refs/heads/master'
       shell: bash
       env:
-        SCW_ACCESS_KEY: SCW6VHPETC96DKKNPCNZ
         SCW_SECRET_KEY: ${{ secrets.SCW_SECRET_KEY }}
-        SCW_DEFAULT_REGION: fr-par
-        SCW_DEFAULT_ZONE: fr-par-1
         SCW_DEFAULT_ORGANIZATION_ID: ${{ secrets.SCW_DEFAULT_ORGANIZATION_ID }}
       run: |
         export SCW_ACCESS_KEY=SCW6VHPETC96DKKNPCNZ
@@ -77,4 +79,5 @@ jobs:
         export SCW_DEFAULT_REGION=fr-par
         export SCW_DEFAULT_ZONE=fr-par-1
         export SCW_DEFAULT_ORGANIZATION_ID=${SCW_DEFAULT_ORGANIZATION_ID}
+        export GOOGLE_BACKEND_CREDENTIALS=service-account.json
         terraform apply -auto-approve
