@@ -1,5 +1,12 @@
 provider "scaleway" {}
 
+terraform {
+  backend "gcs" {
+    bucket  = "tf-state-kube-cluster"
+    prefix  = "terraform/state"
+  }
+}
+
 resource "scaleway_k8s_cluster_beta" "testing" {
   name = "test-myfingerprint"
   description = "testing cluster"
