@@ -10,7 +10,7 @@ terraform {
 resource "scaleway_k8s_cluster_beta" "testing" {
   name = "test-myfingerprint"
   description = "testing cluster"
-  version = "1.19.2"
+  version = "1.19.3"
   cni = "cilium"
   enable_dashboard = true
   ingress = "nginx"
