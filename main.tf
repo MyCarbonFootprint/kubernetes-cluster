@@ -24,6 +24,45 @@ resource "scaleway_k8s_pool_beta" "testing" {
   autohealing = true
 }
 
+provider "kubernetes" {
+  config_path = local_file.kubeconfig.filename
+}
+
+resource "kubernetes_namespace" "dev" {
+  metadata {
+    annotations = {
+      name = "dev"
+    }
+
+    name = "dev"
+  }
+
+  depends_on = [ local_file.kubeconfig ]
+}
+
+resource "kubernetes_secret" "docker" {
+  metadata {
+    name = "docker-cfg"
+    namespace = "dev"
+  }
+
+  data = {
+    ".dockerconfigjson" = <<DOCKER
+{
+  "auths": {
+    "${var.registry_server}": {
+      "auth": "${base64encode("${var.registry_username}:${var.registry_password}")}"
+    }
+  }
+}
+DOCKER
+  }
+
+  type = "kubernetes.io/dockerconfigjson"
+
+  depends_on = [ local_file.kubeconfig ]
+}
+
 resource "local_file" "kubeconfig" {
   content = scaleway_k8s_cluster_beta.testing.kubeconfig[0].config_file
   filename = "${path.module}/kubeconfig"
