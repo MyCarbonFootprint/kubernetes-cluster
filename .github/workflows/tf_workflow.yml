@@ -64,7 +64,7 @@ jobs:
         export SCW_DEFAULT_ORGANIZATION_ID=${SCW_DEFAULT_ORGANIZATION_ID}
         export GOOGLE_BACKEND_CREDENTIALS=service-account.json
         export TF_VAR_registry_password=${GH_TOKEN}
-        terraform plan
+        terraform plan -target scaleway_k8s_cluster_beta.testing -target scaleway_k8s_pool_beta.testing -target local_file.kubeconfig
 
     # Runs a single command using the runners shell
     - name: Terraform apply
@@ -83,4 +83,5 @@ jobs:
         export SCW_DEFAULT_ORGANIZATION_ID=${SCW_DEFAULT_ORGANIZATION_ID}
         export GOOGLE_BACKEND_CREDENTIALS=service-account.json
         export TF_VAR_registry_password=${GH_TOKEN}
+        terraform apply -auto-approve -target scaleway_k8s_cluster_beta.testing -target scaleway_k8s_pool_beta.testing -target local_file.kubeconfig
         terraform apply -auto-approve
