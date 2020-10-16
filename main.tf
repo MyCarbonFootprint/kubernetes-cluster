@@ -24,6 +24,20 @@ resource "scaleway_k8s_pool_beta" "testing" {
   autohealing = true
 }
 
+provider "kubernetes" {
+  config_path = local_file.kubeconfig.filename
+}
+
+resource "kubernetes_namespace" "dev" {
+  metadata {
+    annotations = {
+      name = "dev"
+    }
+
+    name = "dev"
+  }
+}
+
 resource "kubernetes_secret" "docker" {
   metadata {
     name = "docker-cfg"
@@ -43,6 +57,8 @@ DOCKER
   }
 
   type = "kubernetes.io/dockerconfigjson"
+
+  depends_on = [ local_file.kubeconfig ]
 }
 
 resource "local_file" "kubeconfig" {
