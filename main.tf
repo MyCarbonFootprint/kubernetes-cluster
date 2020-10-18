@@ -36,8 +36,6 @@ resource "kubernetes_namespace" "dev" {
 
     name = "dev"
   }
-
-  depends_on = [ local_file.kubeconfig ]
 }
 
 resource "kubernetes_secret" "docker" {
@@ -60,7 +58,7 @@ DOCKER
 
   type = "kubernetes.io/dockerconfigjson"
 
-  depends_on = [ local_file.kubeconfig ]
+  depends_on = [ kubernetes_namespace.dev ]
 }
 
 resource "local_file" "kubeconfig" {
