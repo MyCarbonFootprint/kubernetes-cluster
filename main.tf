@@ -25,23 +25,16 @@ resource "scaleway_k8s_pool_beta" "testing" {
 }
 
 provider "kubernetes" {
-  config_path = local_file.kubeconfig.filename
-}
+  load_config_file = "false"
 
-resource "kubernetes_namespace" "dev" {
-  metadata {
-    annotations = {
-      name = "dev"
-    }
-
-    name = "dev"
-  }
+  host = scaleway_k8s_cluster_beta.testing.kubeconfig[0].host
+  token = scaleway_k8s_cluster_beta.testing.kubeconfig[0].token
+  insecure = "true"
 }
 
 resource "kubernetes_secret" "docker" {
   metadata {
     name = "docker-cfg"
-    namespace = "dev"
   }
 
   data = {
@@ -57,15 +50,4 @@ DOCKER
   }
 
   type = "kubernetes.io/dockerconfigjson"
-
-  depends_on = [ kubernetes_namespace.dev ]
-}
-
-resource "local_file" "kubeconfig" {
-  content = scaleway_k8s_cluster_beta.testing.kubeconfig[0].config_file
-  filename = "${path.module}/kubeconfig"
-}
-
-output "cluster_url" {
-  value = scaleway_k8s_cluster_beta.testing.apiserver_url
 }
