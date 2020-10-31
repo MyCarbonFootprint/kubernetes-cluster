@@ -1,35 +1,6 @@
-provider "scaleway" {}
 
-terraform {
-  backend "gcs" {
-    bucket  = "tf-state-kube-cluster"
-    prefix  = "terraform/state"
-  }
-}
-
-resource "scaleway_k8s_cluster_beta" "testing" {
-  name = "test-myfingerprint"
-  description = "testing cluster"
-  version = "1.19.3"
-  cni = "cilium"
-  enable_dashboard = true
-  ingress = "nginx"
-}
-
-resource "scaleway_k8s_pool_beta" "testing" {
-  cluster_id = scaleway_k8s_cluster_beta.testing.id
-  name = "default"
-  node_type = "DEV1-M"
-  size = 1
-  autohealing = true
-}
-
-provider "kubernetes" {
-  load_config_file = "false"
-
-  host = scaleway_k8s_cluster_beta.testing.kubeconfig[0].host
-  token = scaleway_k8s_cluster_beta.testing.kubeconfig[0].token
-  insecure = "true"
+module "kube_cluster" {
+  source = "./tf_modules/kube_cluster/"
 }
 
 resource "kubernetes_secret" "docker" {
@@ -50,4 +21,56 @@ DOCKER
   }
 
   type = "kubernetes.io/dockerconfigjson"
+}
+
+resource "helm_release" "grafana" {
+  name      = "grafana"
+  chart     = "grafana/grafana"
+
+  values = [
+    file("grafana/values.yaml")
+  ]
+
+  set {
+    name  = "ingress.hosts"
+    value = "{grafana${replace(module.kube_cluster.cluster_wildcard_dns, "*", "")}}"
+  }
+  set {
+    name = "grafana.ini.server.domain"
+    value = "grafana${replace(module.kube_cluster.cluster_wildcard_dns, "*", "")}"
+  }
+}
+
+resource "helm_release" "prometheus" {
+  name      = "prometheus"
+  chart     = "prometheus-community/prometheus"
+
+  values = [
+    file("prometheus/values.yaml")
+  ]
+
+  set {
+    name  = "server.ingress.hosts"
+    value = "{prometheus${replace(module.kube_cluster.cluster_wildcard_dns, "*", "")}}"
+  }
+}
+
+resource "helm_release" "logzio" {
+  name      = "logzio"
+  chart     = "logzio-helm/logzio-k8s-logs"
+
+  set_sensitive {
+    name  = "secrets.logzioShippingToken"
+    value = var.logzio_token
+  }
+
+  set {
+    name  = "secrets.clusterName"
+    value = module.kube_cluster.cluster_name
+  }
+
+  set {
+    name  = "secrets.logzioRegion"
+    value = "uk"
+  }
 }
