@@ -11,3 +11,7 @@ variable "registry_username" {
 variable "registry_password" {
   type    = string
 }
+
+variable "logzio_token" {
+  type    = string
+}
