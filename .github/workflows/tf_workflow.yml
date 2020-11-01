@@ -23,15 +23,14 @@ jobs:
       shell: bash
       run: |
         # Install Terraform
-        wget https://releases.hashicorp.com/terraform/0.13.4/terraform_0.13.4_openbsd_amd64.zip
-        unzip terraform_0.13.4_openbsd_amd64.zip
-        terraform -v
+        curl -fsSL https://apt.releases.hashicorp.com/gpg | sudo apt-key add -
+        sudo apt-add-repository "deb [arch=amd64] https://apt.releases.hashicorp.com $(lsb_release -cs) main"
         # Install Helm
         curl https://baltocdn.com/helm/signing.asc | sudo apt-key add -
         sudo apt-get install apt-transport-https --yes
         echo "deb https://baltocdn.com/helm/stable/debian/ all main" | sudo tee /etc/apt/sources.list.d/helm-stable-debian.list
         sudo apt-get update -y
-        sudo apt-get install helm -y
+        sudo apt-get install helm terraform -y
 
     # Runs a single command using the runners shell
     - name: Prepare GCP service account file
@@ -66,6 +65,7 @@ jobs:
         SCW_SECRET_KEY: ${{ secrets.SCW_SECRET_KEY }}
         SCW_DEFAULT_ORGANIZATION_ID: ${{ secrets.SCW_DEFAULT_ORGANIZATION_ID }}
         LOGZIO_TOKEN: ${{ secrets.LOGZIO_TOKEN }}
+        SLACK_WEBHOOK: ${{ secrets.SLACK_WEBHOOK }}
       run: |
         export SCW_ACCESS_KEY=SCW6VHPETC96DKKNPCNZ
         export SCW_SECRET_KEY=${SCW_SECRET_KEY}
@@ -75,16 +75,19 @@ jobs:
         export GOOGLE_BACKEND_CREDENTIALS=service-account.json
         export TF_VAR_registry_password=${GH_TOKEN}
         export TF_VAR_logzio_token=${LOGZIO_TOKEN}
+        export TF_VAR_SLACK_WEBHOOK=${SLACK_WEBHOOK}
         terraform plan
 
     # Runs a single command using the runners shell
     - name: Terraform apply
       shell: bash
+      if: github.ref == 'refs/heads/master'
       env:
         GH_TOKEN: ${{ secrets.GH_TOKEN }}
         SCW_SECRET_KEY: ${{ secrets.SCW_SECRET_KEY }}
         SCW_DEFAULT_ORGANIZATION_ID: ${{ secrets.SCW_DEFAULT_ORGANIZATION_ID }}
         LOGZIO_TOKEN: ${{ secrets.LOGZIO_TOKEN }}
+        SLACK_WEBHOOK: ${{ secrets.SLACK_WEBHOOK }}
       run: |
         export SCW_ACCESS_KEY=SCW6VHPETC96DKKNPCNZ
         export SCW_SECRET_KEY=${SCW_SECRET_KEY}
@@ -94,4 +97,12 @@ jobs:
         export GOOGLE_BACKEND_CREDENTIALS=service-account.json
         export TF_VAR_registry_password=${GH_TOKEN}
         export TF_VAR_logzio_token=${LOGZIO_TOKEN}
+        export TF_VAR_SLACK_WEBHOOK=${SLACK_WEBHOOK}
         terraform apply -auto-approve
+
+    - name: Slack Notify
+      uses: rtCamp/action-slack-notify@v2.1.0
+      env:
+        SLACK_WEBHOOK: ${{ secrets.SLACK_WEBHOOK }}
+        SLACK_USERNAME: "Github Actions"
+        SLACK_ICON_EMOJI: ":information_source"

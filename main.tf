@@ -23,6 +23,29 @@ DOCKER
   type = "kubernetes.io/dockerconfigjson"
 }
 
+resource "kubernetes_config_map" "slack_api_url" {
+  metadata {
+    name = "prometheus-slack-api-url"
+  }
+
+  data = {
+    "alertmanager.yml": <<EOF
+      global: {}
+      receivers:
+      - name: default-receiver
+        slack_configs:
+        - api_url: ${var.slack_api_url}
+          channel: '#push_alerts'
+          send_resolved: true
+      route:
+        group_interval: 5m
+        group_wait: 10s
+        receiver: default-receiver
+        repeat_interval: 3h
+    EOF
+  }
+}
+
 resource "helm_release" "grafana" {
   name      = "grafana"
   chart     = "grafana/grafana"
@@ -52,6 +75,16 @@ resource "helm_release" "prometheus" {
   set {
     name  = "server.ingress.hosts"
     value = "{prometheus${replace(module.kube_cluster.cluster_wildcard_dns, "*", "")}}"
+  }
+
+  set {
+    name  = "alertmanager.ingress.hosts"
+    value = "{alertmanager${replace(module.kube_cluster.cluster_wildcard_dns, "*", "")}}"
+  }
+
+  set {
+    name = "alertmanager.configMapOverrideName"
+    value = "slack-api-url"
   }
 }
 
