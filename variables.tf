@@ -15,3 +15,7 @@ variable "registry_password" {
 variable "logzio_token" {
   type    = string
 }
+
+variable "slack_api_url" {
+  type    = string
+}

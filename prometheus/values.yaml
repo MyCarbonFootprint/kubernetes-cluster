@@ -4,3 +4,36 @@ server:
     enabled: true
     annotations:
       kubernetes.io/ingress.class: "nginx"
+
+alertmanager:
+  ingress:
+    enabled: true
+    annotations:
+      kubernetes.io/ingress.class: "nginx"
+
+image:
+  tag: v2.22.0
+
+serverFiles:
+  alerting_rules.yml:
+    groups:
+    - name: CPU
+      rules:
+      - alert: CPUUsage
+        expr: (100 - (avg by (instance) (irate(node_cpu_seconds_total{mode="idle"}[1m])) * 100)) > 75
+        for: 1m
+        labels:
+          severity: page
+        annotations:
+          summary: "{{$labels.instance}}: High CPU usage detected"
+          description: "{{$labels.instance}}: CPU usage is above 75% (current value is: {{ $value }})."
+    - name: RAM
+      rules:
+      - alert: RAMUsage
+        expr: ((node_memory_MemTotal_bytes - node_memory_MemFree_bytes - node_memory_Cached_bytes) / (node_memory_MemTotal_bytes) * 100) > 85
+        for: 1m
+        labels:
+          severity: page
+        annotations:
+          summary: "{{$labels.instance}}: High RAM usage detected"
+          description: "{{$labels.instance}}: RAM usage is above 75% (current value is: {{ $value }})."

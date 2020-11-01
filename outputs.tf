@@ -5,3 +5,7 @@ output "grafana_url" {
 output "prometheus_url" {
     value = "prometheus${replace(module.kube_cluster.cluster_wildcard_dns, "*", "")}"
 }
+
+output "alertmanager_url" {
+    value = "alertmanager${replace(module.kube_cluster.cluster_wildcard_dns, "*", "")}"
+}
