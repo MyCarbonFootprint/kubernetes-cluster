@@ -106,3 +106,4 @@ jobs:
         SLACK_WEBHOOK: ${{ secrets.SLACK_WEBHOOK }}
         SLACK_USERNAME: "Github Actions"
         SLACK_ICON_EMOJI: ":information_source"
+        SLACK_CHANNEL: "push_github"
