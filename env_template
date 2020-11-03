@@ -3,6 +3,6 @@ export SCW_SECRET_KEY=
 export SCW_DEFAULT_REGION=
 export SCW_DEFAULT_ORGANIZATION_ID=
 export GOOGLE_BACKEND_CREDENTIALS=
-export TF_VAR_REGISTRY_PASSWORD=
+export TF_VAR_registry_password=
 export TF_VAR_logzio_token=
 export TF_VAR_slack_api_url=

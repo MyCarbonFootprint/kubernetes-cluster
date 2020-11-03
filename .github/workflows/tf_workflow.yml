@@ -102,6 +102,7 @@ jobs:
 
     - name: Slack Notify
       uses: rtCamp/action-slack-notify@v2.1.0
+      if: ${{ always() }}
       env:
         SLACK_WEBHOOK: ${{ secrets.SLACK_WEBHOOK }}
         SLACK_USERNAME: "Github Actions"

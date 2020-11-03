@@ -10,6 +10,10 @@ output "alertmanager_url" {
     value = "alertmanager${replace(module.kube_cluster.cluster_wildcard_dns, "*", "")}"
 }
 
+output "cluster_wildcard_dns" {
+    value = replace(module.kube_cluster.cluster_wildcard_dns, "*", "")
+}
+
 output "kube_host" {
     value = module.kube_cluster.kubeconfig[0].host
     sensitive   = true
