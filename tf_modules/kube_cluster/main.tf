@@ -2,7 +2,7 @@ provider "scaleway" {}
 
 resource "scaleway_k8s_cluster_beta" "testing" {
   name = "test-myfingerprint"
-  version = "1.19.3"
+  version = "1.20.4"
   cni = "cilium"
   enable_dashboard = true
   ingress = "nginx"
